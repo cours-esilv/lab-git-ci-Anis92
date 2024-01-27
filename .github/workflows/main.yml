@@ -1,28 +1,49 @@
-- name: Set up JDK 8
-  uses: actions/setup-java@v2
-  with:
-    java-version: '8'
-    distribution: 'adopt'
+name: Workflow
 
-- name: Build with Maven
-  run: mvn --batch-mode --update-snapshots package
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+      
+permissions:
+  checks: write
+  pull-requests: write
 
-- name: Publish Unit Test Results
-  uses: EnricoMi/publish-unit-test-result-action@v1
-  if: always()
-  with:
-    files: target/**/*.xml
 
-- name: Upload a Build Artifact
-  uses: actions/upload-artifact@v2.2.4
-  with:
-    name: my-app-1.0
-    path: target/*
+jobs:
+  build:
+    name: CI
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+      - uses: actions/checkout@v4
 
-- name: Install Docker
-  uses: docker/setup-buildx-action@v1
-  with:
-    install: true
-
-- name: Docker build
-  run: docker build .
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots package
+      
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: target/**/*.xml
+      
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: my-app-1.0
+          path: target/*
+      
+      - name: Install Docker
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      
+      - name: Docker build
+        run: docker build .
